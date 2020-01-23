@@ -1,0 +1,36 @@
+
+#app {
+    width: 800px;
+    margin: 1em auto 0 auto;
+}
+
+.device {
+    margin-left: 1.5em;
+}
+
+.device h1 {
+    font-size: 1.6em;
+}
+
+.badge-pill {
+    background-color: #288edf;
+    color: #fff;
+    font-size: 90%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    display: inline-block;
+    border-radius: 10rem;
+    margin: 2px;
+    padding: .25em .6em;
+}
+
+.tags {
+    margin-bottom: 1em;
+}
+
+.no-shadow {
+    text-shadow: none;
+}

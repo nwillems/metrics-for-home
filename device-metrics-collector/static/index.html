@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" type="text/css" href="/css/topcoat-desktop-light.css">
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
+  </head>
+<body class="light">
+<div id="app">
+    <!-- <div class="search">
+        <input type="search" value="" placeholder="search" class="topcoat-search-input--large">
+    </div> -->
+    <div id="Heading">
+        <h1>Devices:</h1>
+    </div>
+
+    <div v-if="devices">
+        <device-item
+            v-for="device in devices"
+            v-bind:device="device"
+            v-bind:key="device.id"
+            v-on:add-tag="addAndUploadTags(device, $event)" >
+        </device-item>
+    </div>
+    <div v-else>There are unfortunately no devices</div>
+    
+</div>
+
+<template id="device-template">
+    <div class="device">
+        <h1>{{device.title}}</h1>
+        <div class="tags">
+            <span class="badge-pill" v-for="tag in device.tags">{{tag.name}}="{{tag.value}}"
+                <button class="topcoat-icon-button--quiet no-shadow">x</button>
+            </span>
+        </div>
+        <div>
+            <input type="text" class="topcoat-text-input"  placeholder="name" name="tag-name" v-model="new_tag.name" />
+            =
+            <input type="text" class="topcoat-text-input" placeholder="value" name="tag-value" v-model="new_tag.value" />
+            <button class="topcoat-button" v-on:click="addTag">Add tag</button>
+        </div>
+    </div>
+</template>
+
+<script>
+
+Vue.component('device-item', {
+    props: ['device'],
+    data: function(){
+        return {
+            new_tag: { name: "", value: "" }
+        }
+    },
+    template: document.querySelector('#device-template').innerHTML,
+    methods: {
+        addTag: function(){
+            this.$emit('add-tag', { name: this.new_tag.name, value: this.new_tag.value })
+
+            this.new_tag = { name: "", value: "" }
+        }
+    }
+})
+
+Vue.use(VueResource);
+
+function getNameTagValue(tags) {
+    var f = tags.filter((e) => e.name == "name")
+    if(f && f.length > 0){
+        return f[0].value;
+    } else {
+        return undefined;
+    }
+}
+
+function processDeviceData(rawData) {
+    var processed = Object.entries(rawData).map(e => {
+        var id = e[0];
+        var tags = e[1];
+
+        var title = getNameTagValue(tags) || id;
+
+        return { id: id, title: title, tags: tags }
+    });
+    return processed;
+}
+
+var app = new Vue({
+    el: '#app',
+    data: {
+        devices : [
+            { id: 1, title: 'Loading devices', tags: [ {"name": "this", "value": "is"}, {"name": "example", "value": "data"} ] },
+        ]
+    },
+    created: function() {
+        this.$http.get('/devices').then(response => {
+            this.devices = processDeviceData( response.body );
+        });
+    },
+    methods: {
+        addAndUploadTags: function(device, event){
+            device.tags.push(event);
+            this.$http.put('/devices/'+device.id, JSON.stringify(device.tags))
+                .then((response) => console.log("Uploaded for device:", device.id, "With status:", response.status));
+        }
+    }
+})
+</script>
+
+</body>
+</html>
